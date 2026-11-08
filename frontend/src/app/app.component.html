@@ -1,0 +1,148 @@
+<div class="login-page" *ngIf="!user">
+ <div class="login-art"><div class="login-brand"><span class="brand-icon">P</span><b>parkwise</b></div>
+  <div class="art-copy"><span class="kicker">SMART PARKING MANAGEMENT</span><h1>Make every<br><em>space count.</em></h1><p>Find available parking, reserve your space, and manage every visit with ease.</p>
+   <div class="art-stats"><div><b>58</b><small>Parking spaces</small></div><div><b>24/7</b><small>Availability</small></div><div><b>Easy</b><small>Booking</small></div></div>
+  </div><div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div><div class="parking-illustration"><div class="road-line"></div><div class="car car-one">P</div><div class="car car-two">P</div><div class="car car-three">P</div></div>
+  <small class="art-footer">PARKWISE · SMART PARKING</small>
+ </div>
+ <div class="login-panel"><div class="login-box"><div class="mobile-brand"><span class="brand-icon">P</span><b>parkwise</b></div>
+  <ng-container *ngIf="authMode==='login'; else registerForm">
+   <span class="kicker">WELCOME BACK</span><h2>Sign in to your account</h2><p class="muted">Enter your account details to continue.</p>
+   <form (ngSubmit)="login()"><label>Email address<input type="email" name="email" [(ngModel)]="loginEmail" required placeholder="you@example.com"></label>
+    <label>Password<input type="password" name="password" [(ngModel)]="loginPassword" required placeholder="Enter your password"></label>
+    <div class="login-error" *ngIf="loginError">{{loginError}}</div><button class="btn primary wide" [disabled]="busy">{{busy?'Signing in…':'Sign in'}} <span>→</span></button>
+   </form>
+   <p class="auth-switch">New customer? <button type="button" class="link-btn" (click)="authMode='register';loginError=''">Create an account</button></p>
+   <div class="demo-note"><b>Staff access</b><span>Admin and Operator accounts are created by the system administrator.</span></div>
+  </ng-container>
+  <ng-template #registerForm>
+   <span class="kicker">JOIN PARKWISE</span><h2>Create your customer account</h2><p class="muted">Register to discover and book available parking spaces.</p>
+   <form (ngSubmit)="register()"><label>Full name<input name="fullName" [(ngModel)]="registerName" required maxlength="100" placeholder="Your full name"></label>
+    <label>Email address<input type="email" name="registerEmail" [(ngModel)]="registerEmail" required maxlength="120" placeholder="you@example.com"></label>
+    <label>Password<input type="password" name="registerPassword" [(ngModel)]="registerPassword" required minlength="8" placeholder="At least 8 characters"></label>
+    <label>Confirm password<input type="password" name="confirmPassword" [(ngModel)]="registerConfirm" required minlength="8" placeholder="Enter password again"></label>
+    <div class="login-error" *ngIf="loginError">{{loginError}}</div><button class="btn primary wide" [disabled]="busy">{{busy?'Creating account…':'Create customer account'}} <span>→</span></button>
+   </form>
+   <p class="auth-switch">Already registered? <button type="button" class="link-btn" (click)="authMode='login';loginError=''">Sign in</button></p>
+   <small class="login-legal">Public registration creates a CUSTOMER account only. Admin and Operator access cannot be selected here.</small>
+  </ng-template>
+ </div></div>
+</div>
+
+<div class="shell" *ngIf="user">
+ <aside class="sidebar"><div class="side-brand"><span class="brand-icon">P</span><div><b>parkwise</b><small>OPERATIONS CONSOLE</small></div></div>
+  <div class="nav-caption">OVERVIEW</div>
+  <button class="nav-link" [class.selected]="page==='dashboard'" (click)="navigate('dashboard')"><span>▦</span> Dashboard</button>
+  <div class="nav-caption">PARKING OPERATIONS</div>
+  <button class="nav-link" [class.selected]="page==='active'" (click)="navigate('active')"><span>◉</span> Live sessions <i>{{active.length}}</i></button>
+  <button class="nav-link" [class.selected]="page==='slots'" (click)="navigate('slots')"><span>▤</span> Parking slots</button>
+  <button class="nav-link" [class.selected]="page==='lots'" (click)="navigate('lots')"><span>⌖</span> Parking locations</button>
+  <button class="nav-link" [class.selected]="page==='history'" (click)="navigate('history')"><span>◷</span> Session history</button>
+  <button class="nav-link" *ngIf="user.role==='ADMIN'" [class.selected]="page==='audit'" (click)="navigate('audit')"><span>≡</span> Audit trail</button>
+  <div class="sidebar-bottom"><div class="support-card"><div class="support-symbol">✦</div><b>Parking made simple</b><p>Keep your facility running smoothly with real-time visibility.</p></div>
+   <div class="user-card"><div class="user-avatar">{{user.fullName.substring(0,1)}}</div><div class="user-info"><b>{{user.fullName}}</b><small>{{user.role}}</small></div><button title="Sign out" (click)="logout()">↪</button></div>
+  </div>
+ </aside>
+ <main class="main">
+  <header class="topbar"><div class="crumb">Workspace <span>/</span> <b>{{page==='dashboard'?'Overview':page==='active'?'Live sessions':page==='slots'?'Parking slots':page==='lots'?'Parking locations':page==='history'?'Session history':'Audit trail'}}</b></div>
+   <div class="top-right"><span class="system-status"><i></i> System operational</span><div class="top-user">{{user.fullName.substring(0,1)}}</div></div>
+  </header>
+  <div class="page-wrap">
+   <div class="toast success" *ngIf="success" (click)="success=''">✓ {{success}} <b>×</b></div>
+   <div class="toast error" *ngIf="error" (click)="error=''">! {{error}} <b>×</b></div>
+
+   <section *ngIf="page==='dashboard'">
+    <div class="page-title"><div><span class="eyebrow">CAMPUS PARKING · LIVE OVERVIEW</span><h1>Good day, {{user.fullName.split(' ')[0]}} <span>✦</span></h1><p>Here’s what’s happening across your parking facility today.</p></div>
+     <button class="btn primary" (click)="showEntry=true">＋ Register vehicle</button></div>
+    <div class="metric-grid">
+     <article class="metric"><div class="metric-head"><span>Total parking spaces</span><i class="metric-icon violet">▤</i></div><b>{{dashboard.totalSlots}}</b><small>Across all locations</small></article>
+     <article class="metric"><div class="metric-head"><span>Currently occupied</span><i class="metric-icon orange">◉</i></div><b>{{dashboard.occupiedSlots}}</b><small><em class="dot orange-dot"></em> Vehicles parked right now</small></article>
+     <article class="metric"><div class="metric-head"><span>Available spaces</span><i class="metric-icon green">✓</i></div><b>{{dashboard.availableSlots}}</b><small><em class="dot green-dot"></em> Ready for new arrivals</small></article>
+     <article class="metric"><div class="metric-head"><span>Today's revenue</span><i class="metric-icon blue">₹</i></div><b>{{currency(dashboard.todayRevenue)}}</b><small>Payments received today</small></article>
+    </div>
+    <div class="dashboard-grid">
+     <article class="panel occupancy-panel"><div class="panel-head"><div><h3>Parking occupancy</h3><p>Live facility utilization</p></div><span class="live-badge"><i></i> LIVE</span></div>
+      <div class="occupancy-content"><div class="donut" [style.--percent]="occupancyDash+'%'"><div><b>{{occupancyDash}}%</b><small>OCCUPIED</small></div></div>
+       <div class="legend"><div><i class="legend-dot occupied"></i><span>Occupied spaces</span><b>{{dashboard.occupiedSlots}}</b></div><div><i class="legend-dot available"></i><span>Available spaces</span><b>{{dashboard.availableSlots}}</b></div><div><i class="legend-dot maintenance"></i><span>Maintenance</span><b>{{slots.length-dashboard.occupiedSlots-dashboard.availableSlots}}</b></div></div>
+      </div><div class="occupancy-foot"><span>Active parking sessions</span><b>{{dashboard.activeSessions}}</b></div>
+     </article>
+     <article class="panel quick-panel"><div class="panel-head"><div><h3>Quick actions</h3><p>Common parking operations</p></div></div>
+      <button class="quick-action" (click)="showEntry=true"><i class="quick-icon purple-bg">＋</i><span><b>Vehicle check-in</b><small>Register a new arrival</small></span><strong>→</strong></button>
+      <button class="quick-action" (click)="navigate('active')"><i class="quick-icon green-bg">↗</i><span><b>Vehicle check-out</b><small>Complete an active session</small></span><strong>→</strong></button>
+      <button class="quick-action" (click)="navigate('slots')"><i class="quick-icon blue-bg">▦</i><span><b>View parking slots</b><small>Check availability by type</small></span><strong>→</strong></button>
+     </article>
+    </div>
+    <article class="panel recent-panel"><div class="panel-head"><div><h3>Recent parking activity</h3><p>Latest vehicle sessions</p></div><button class="link-btn" (click)="navigate('history')">View all →</button></div>
+     <div class="table-scroll"><table><thead><tr><th>VEHICLE</th><th>LOCATION / SLOT</th><th>ENTRY TIME</th><th>STATUS</th><th>AMOUNT</th></tr></thead>
+      <tbody><tr *ngFor="let s of history.slice(0,5)"><td><b>{{s.vehicleNumber}}</b><small>{{s.vehicleType}}</small></td><td>{{s.lot.name}} <small>{{s.slot.slotNumber}}</small></td><td>{{date(s.entryTime)}}</td><td><span class="status" [class.green-status]="s.status==='ACTIVE'" [class.gray-status]="s.status!=='ACTIVE'">{{s.status}}</span></td><td>{{s.amount===null?'—':currency(s.amount)}}</td></tr>
+       <tr *ngIf="history.length===0"><td colspan="5" class="empty">No parking activity yet. Register the first vehicle.</td></tr></tbody></table></div>
+    </article>
+   </section>
+
+   <section *ngIf="page==='active'">
+    <div class="page-title"><div><span class="eyebrow">PARKING OPERATIONS</span><h1>Live sessions</h1><p>Monitor currently parked vehicles and complete checkouts.</p></div><button class="btn primary" (click)="showEntry=true">＋ Vehicle check-in</button></div>
+    <article class="panel"><div class="panel-head"><div><h3>Currently parked</h3><p>{{active.length}} active parking session(s)</p></div><span class="live-badge"><i></i> LIVE</span></div>
+     <div class="table-scroll"><table><thead><tr><th>VEHICLE</th><th>TYPE</th><th>LOCATION / SLOT</th><th>ENTRY TIME</th><th>STATUS</th><th>ACTION</th></tr></thead><tbody>
+      <tr *ngFor="let s of active"><td><b>{{s.vehicleNumber}}</b></td><td>{{s.vehicleType}}</td><td>{{s.lot.name}} <small>{{s.slot.slotNumber}}</small></td><td>{{date(s.entryTime)}}</td><td><span class="status green-status">ACTIVE</span></td><td><button class="small-btn" (click)="checkOut(s)">Check out</button></td></tr>
+      <tr *ngIf="active.length===0"><td colspan="6" class="empty">No active parking sessions.</td></tr>
+     </tbody></table></div></article>
+   </section>
+
+   <section *ngIf="page==='slots'">
+    <div class="page-title"><div><span class="eyebrow">FACILITY MANAGEMENT</span><h1>Parking slots</h1><p>View real-time slot status across all parking locations.</p></div></div>
+    <div class="slot-legend"><span><i class="legend-dot available"></i> Available</span><span><i class="legend-dot occupied"></i> Occupied</span><span><i class="legend-dot maintenance"></i> Maintenance</span></div>
+    <article class="panel slot-panel" *ngFor="let lot of lots"><div class="panel-head"><div><h3>{{lot.name}}</h3><p>{{lot.address}}</p></div><span class="record-chip">{{lot.availableSlots}} / {{lot.totalSlots}} available</span></div>
+     <div class="slot-grid"><div class="slot-tile" *ngFor="let s of getLotSlots(lot.id)" [class.slot-free]="s.status==='AVAILABLE'" [class.slot-busy]="s.status==='OCCUPIED'" [class.slot-maint]="s.status==='MAINTENANCE'" [title]="s.slotNumber+' · '+s.vehicleType+' · '+s.status">
+      <b>{{s.slotNumber}}</b><small>{{s.vehicleType}}</small></div></div>
+    </article>
+   </section>
+
+   <section *ngIf="page==='lots'">
+    <div class="page-title"><div><span class="eyebrow">FACILITY MANAGEMENT</span><h1>Parking locations</h1><p>Manage facilities, rates, and capacity.</p></div><button class="btn primary" *ngIf="user.role==='ADMIN'" (click)="showLot=true">＋ Add location</button></div>
+    <div class="lot-grid"><article class="panel lot-card" *ngFor="let l of lots"><div class="lot-card-top"><span class="lot-symbol">⌖</span><span class="status green-status">ACTIVE</span></div><h3>{{l.name}}</h3><p>{{l.address}}</p><div class="lot-rate">{{currency(l.hourlyRate)}} <small>/ hour</small></div><div class="lot-capacity"><div><span>Available spaces</span><b>{{l.availableSlots}} / {{l.totalSlots}}</b></div><div class="progress"><i [style.width]="(l.totalSlots?l.availableSlots/l.totalSlots*100:0)+'%'"></i></div></div></article>
+     <div class="panel add-lot-placeholder" *ngIf="user.role==='ADMIN'" (click)="showLot=true"><b>＋</b><strong>Add a parking location</strong><small>Create a facility and generate slots</small></div>
+    </div>
+   </section>
+
+   <section *ngIf="page==='history'">
+    <div class="page-title"><div><span class="eyebrow">REPORTING & RECORDS</span><h1>Session history</h1><p>Review vehicle entries, completed visits, and payment records.</p></div></div>
+    <article class="panel"><div class="panel-head"><div><h3>All sessions</h3><p>Latest 100 records</p></div><input class="search-input" [(ngModel)]="search" placeholder="Search vehicle, location or slot…"></div>
+     <div class="table-scroll"><table><thead><tr><th>VEHICLE</th><th>LOCATION / SLOT</th><th>ENTRY</th><th>EXIT</th><th>DURATION</th><th>AMOUNT</th><th>PAYMENT</th><th>ACTION</th></tr></thead><tbody>
+      <tr *ngFor="let s of filteredHistory"><td><b>{{s.vehicleNumber}}</b><small>{{s.vehicleType}}</small></td><td>{{s.lot.name}}<small>{{s.slot.slotNumber}}</small></td><td>{{date(s.entryTime)}}</td><td>{{date(s.exitTime)}}</td><td>{{s.billableHours?s.billableHours+' hr':'—'}}</td><td>{{s.amount===null?'—':currency(s.amount)}}</td><td><span class="status" [class.green-status]="s.paymentStatus==='PAID'" [class.orange-status]="s.paymentStatus==='PENDING'">{{s.paymentStatus}}</span></td><td><button *ngIf="s.status==='COMPLETED'&&s.paymentStatus==='PENDING'" class="small-btn" (click)="showPaymentId=s.id">Pay</button><span *ngIf="s.paymentStatus==='PAID'" class="paid-mark">✓ Paid</span></td></tr>
+      <tr *ngIf="filteredHistory.length===0"><td colspan="8" class="empty">No matching session records.</td></tr>
+     </tbody></table></div></article>
+   </section>
+
+   <section *ngIf="page==='audit'&&user.role==='ADMIN'">
+    <div class="page-title"><div><span class="eyebrow">SECURITY & COMPLIANCE</span><h1>Audit trail</h1><p>Recent administrative and parking operations events.</p></div></div>
+    <article class="panel"><div class="panel-head"><div><h3>System activity</h3><p>Latest 100 audit events</p></div></div><div class="table-scroll"><table><thead><tr><th>TIME</th><th>ACTOR</th><th>ACTION</th><th>DETAILS</th></tr></thead><tbody><tr *ngFor="let a of auditRows"><td>{{date($any(a).createdAt)}}</td><td>{{$any(a).actor}}</td><td><span class="status gray-status">{{$any(a).action}}</span></td><td>{{$any(a).details}}</td></tr><tr *ngIf="auditRows.length===0"><td colspan="4" class="empty">No audit events recorded yet.</td></tr></tbody></table></div></article>
+   </section>
+   <footer class="footer"><span>© 2026 Parkwise Operations</span><span>Secure parking management · v1.0.0</span></footer>
+  </div>
+ </main>
+</div>
+
+<div class="modal-backdrop" *ngIf="showEntry" (click)="showEntry=false"><section class="modal" (click)="$event.stopPropagation()">
+ <div class="modal-title"><div><span class="eyebrow">NEW PARKING SESSION</span><h2>Vehicle check-in</h2><p>Register an arriving vehicle and assign a parking slot.</p></div><button class="close" (click)="showEntry=false">×</button></div>
+ <form (ngSubmit)="checkIn()"><label>Vehicle registration number<input name="vehicleNumber" [(ngModel)]="entryForm.vehicleNumber" required maxlength="20" placeholder="e.g. OD02AB1234"></label>
+  <label>Vehicle type<select name="vehicleType" [(ngModel)]="entryForm.vehicleType"><option value="CAR">Car</option><option value="BIKE">Bike</option><option value="EV">Electric vehicle</option></select></label>
+  <label>Parking location<select name="lotId" [(ngModel)]="entryForm.lotId" required><option *ngFor="let l of lots" [ngValue]="l.id">{{l.name}} · {{l.availableSlots}} available</option></select></label>
+  <div class="modal-actions"><button type="button" class="btn secondary" (click)="showEntry=false">Cancel</button><button class="btn primary" [disabled]="busy||!entryForm.vehicleNumber.trim()">{{busy?'Processing…':'Confirm check-in'}}</button></div>
+ </form>
+</section></div>
+
+<div class="modal-backdrop" *ngIf="showLot" (click)="showLot=false"><section class="modal" (click)="$event.stopPropagation()">
+ <div class="modal-title"><div><span class="eyebrow">FACILITY SETUP</span><h2>Add parking location</h2><p>Configure a new facility and its initial slot capacity.</p></div><button class="close" (click)="showLot=false">×</button></div>
+ <form (ngSubmit)="createLot()"><label>Location name<input name="name" [(ngModel)]="lotForm.name" required maxlength="100" placeholder="e.g. North Campus Parking"></label>
+  <label>Address<input name="address" [(ngModel)]="lotForm.address" required maxlength="180" placeholder="Street, area, city"></label>
+  <label>Hourly rate (₹)<input type="number" name="hourlyRate" [(ngModel)]="lotForm.hourlyRate" required min="1"></label>
+  <div class="three-fields"><label>Car slots<input type="number" name="carSlots" [(ngModel)]="lotForm.carSlots" min="1" max="500" required></label><label>Bike slots<input type="number" name="bikeSlots" [(ngModel)]="lotForm.bikeSlots" min="0" max="500" required></label><label>EV slots<input type="number" name="evSlots" [(ngModel)]="lotForm.evSlots" min="0" max="500" required></label></div>
+  <div class="modal-actions"><button type="button" class="btn secondary" (click)="showLot=false">Cancel</button><button class="btn primary" [disabled]="busy">{{busy?'Creating…':'Create location'}}</button></div>
+ </form>
+</section></div>
+
+<div class="modal-backdrop" *ngIf="showPaymentId!==null" (click)="showPaymentId=null"><section class="modal compact-modal" (click)="$event.stopPropagation()">
+ <div class="modal-title"><div><span class="eyebrow">PAYMENT COLLECTION</span><h2>Record payment</h2><p>Choose the method used to collect the parking fee.</p></div><button class="close" (click)="showPaymentId=null">×</button></div>
+ <label>Payment method<select [(ngModel)]="paymentMethod"><option value="UPI">UPI</option><option value="CASH">Cash</option><option value="CARD">Card</option></select></label>
+ <div class="modal-actions"><button class="btn secondary" (click)="showPaymentId=null">Cancel</button><button class="btn primary" (click)="recordPayment(showPaymentId!)">Confirm payment</button></div>
+</section></div>
